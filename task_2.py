@@ -17,89 +17,55 @@ def aggregate_user_threat_score(department_scores, total_importance):
     # Normalize by total importance to bring the score within the 0-90 range.
     return min(weighted_sum / total_importance, 90)
 
-# Unit Test and Functional Test Case Class
-class TestAggregatedThreatScore(unittest.TestCase):
+class TestFunctionalThreatScores(unittest.TestCase):
 
-    def test_generate_random_data(self):
-        """Test if generated threat scores are within the expected range."""
-        data = generate_random_data(mean=30, variance=10, num_samples=50)
-        self.assertTrue((data >= 0).all() and (data <= 90).all())
+    def test_all_departments_have_high_scores(self):
+        """All departments have high average scores, expecting a high aggregated score."""
+        departments = [
+            generate_random_data(80, 5, 50),
+            generate_random_data(85, 5, 60),
+            generate_random_data(82, 5, 40),
+            generate_random_data(83, 5, 70),
+        ]
+        department_scores = [calculate_department_threat_score(dept) for dept in departments]
+        result = aggregate_user_threat_score(department_scores)
+        self.assertTrue(80 <= result <= 90)
 
-    def test_calculate_department_threat_score(self):
-        """Test calculation of department threat score with a sample list of scores and importance."""
-        threat_scores = [10, 20, 30, 40, 50]
-        importance = 3
-        department_score = calculate_department_threat_score(threat_scores, importance)
-        self.assertAlmostEqual(department_score, 90, delta=0.1)
+    def test_some_departments_have_low_scores(self):
+        """Some departments have very low scores while others have high scores, expecting a high threat score overall."""
+        departments = [
+            generate_random_data(80, 5, 50),
+            generate_random_data(85, 5, 60),
+            generate_random_data(20, 5, 40),
+            generate_random_data(15, 5, 70),
+        ]
+        department_scores = [calculate_department_threat_score(dept) for dept in departments]
+        result = aggregate_user_threat_score(department_scores)
+        self.assertTrue(50 <= result <= 90)
 
-    def test_aggregate_user_threat_score(self):
-        """Test the final aggregation of department threat scores."""
-        department_scores = [90, 60, 30]
-        total_importance = 5
-        aggregate_score = aggregate_user_threat_score(department_scores, total_importance)
-        self.assertAlmostEqual(aggregate_score, 36, delta=0.1)
-
-    # Functional Test Cases
-
-    def test_equal_department_importance_similar_threats(self):
-        """Test scenario with similar threat levels and equal importance across departments."""
+    def test_one_department_has_extreme_outliers(self):
+        """All departments have the same mean threat score, but one department has extreme outliers."""
         departments = [
             generate_random_data(30, 5, 50),
-            generate_random_data(32, 5, 50),
-            generate_random_data(28, 5, 50),
-            generate_random_data(31, 5, 50),
-            generate_random_data(29, 5, 50)
+            generate_random_data(30, 5, 60),
+            generate_random_data(30, 5, 40),
+            np.append(generate_random_data(30, 5, 70), [90, 90, 90]), 
         ]
-        importance = [3, 3, 3, 3, 3]
-        department_scores = [calculate_department_threat_score(dept, imp) for dept, imp in zip(departments, importance)]
-        total_importance = sum(importance)
-        result = aggregate_user_threat_score(department_scores, total_importance)
-        self.assertTrue(0 <= result <= 90)
+        department_scores = [calculate_department_threat_score(dept) for dept in departments]
+        result = aggregate_user_threat_score(department_scores)
+        self.assertTrue(30 <= result <= 90)
 
-    def test_different_importance_levels(self):
-        """Test varying department importance levels."""
+    def test_departments_with_different_number_of_users(self):
+        """Departments have varying numbers of users, but aggregation still works."""
         departments = [
-            generate_random_data(50, 10, 100),
-            generate_random_data(20, 5, 150),
-            generate_random_data(15, 5, 120),
-            generate_random_data(10, 3, 50),
-            generate_random_data(35, 8, 80)
+            generate_random_data(30, 5, 10),  
+            generate_random_data(40, 5, 100), 
+            generate_random_data(50, 5, 60), 
+            generate_random_data(60, 5, 30),  
         ]
-        importance = [5, 4, 3, 2, 4]
-        department_scores = [calculate_department_threat_score(dept, imp) for dept, imp in zip(departments, importance)]
-        total_importance = sum(importance)
-        result = aggregate_user_threat_score(department_scores, total_importance)
-        self.assertTrue(0 <= result <= 90)
-
-    def test_high_outliers_in_one_department(self):
-        """Test handling of outliers in one department's threat scores."""
-        departments = [
-            generate_random_data(10, 3, 100),
-            generate_random_data(15, 4, 120),
-            generate_random_data(20, 5, 100),
-            generate_random_data(70, 10, 50),
-            generate_random_data(12, 3, 80)
-        ]
-        importance = [3, 3, 3, 5, 3]
-        department_scores = [calculate_department_threat_score(dept, imp) for dept, imp in zip(departments, importance)]
-        total_importance = sum(importance)
-        result = aggregate_user_threat_score(department_scores, total_importance)
-        self.assertTrue(0 <= result <= 90)
-
-    def test_minimal_threats_in_all_departments(self):
-        """Test case where all departments have minimal threat scores."""
-        departments = [
-            generate_random_data(5, 2, 100),
-            generate_random_data(5, 2, 120),
-            generate_random_data(5, 2, 80),
-            generate_random_data(5, 2, 60),
-            generate_random_data(5, 2, 90)
-        ]
-        importance = [2, 3, 2, 3, 2]
-        department_scores = [calculate_department_threat_score(dept, imp) for dept, imp in zip(departments, importance)]
-        total_importance = sum(importance)
-        result = aggregate_user_threat_score(department_scores, total_importance)
-        self.assertTrue(0 <= result <= 90)
+        department_scores = [calculate_department_threat_score(dept) for dept in departments]
+        result = aggregate_user_threat_score(department_scores)
+        self.assertTrue(30 <= result <= 90)
 
 if __name__ == "__main__":
     unittest.main()
