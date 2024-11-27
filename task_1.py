@@ -1,4 +1,4 @@
-# 1.
+
 class Solution(object):
     def findLengthOfLCIS(self, values):
         if not values:
@@ -23,7 +23,7 @@ class Solution(object):
 # After each step, I compare streak with longest, which tracks the maximum, and update longest if needed. At the end, I return longest
 
 
-#  2.
+
 class Solution(object):
     def merge(self, arr1, size1, arr2, size2):
         left = size1 - 1
@@ -46,7 +46,7 @@ class Solution(object):
 # I compare the last numbers of both arrays and put the larger one in the last empty spot of arr1
 # i keep moving the pointers and repeat until arr2 is fully merged into arr1
 
-#  3.
+
 class Solution(object):
     def intersection(self, arr1, arr2):
         elements = set(arr1)
